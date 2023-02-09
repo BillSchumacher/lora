@@ -285,13 +285,13 @@ def load_and_save_masks_and_captions(
         target_prompts = captions
 
     print(f"Generating {len(images)} masks...")
-    if not use_face_detection_instead:
-        seg_masks = clipseg_mask_generator(
+    seg_masks = (
+        face_mask_google_mediapipe(images=images)
+        if use_face_detection_instead
+        else clipseg_mask_generator(
             images=images, target_prompts=target_prompts, temp=temp
         )
-    else:
-        seg_masks = face_mask_google_mediapipe(images=images)
-
+    )
     # find the center of mass of the mask
     if crop_based_on_salience:
         coms = [_center_of_mass(mask) for mask in seg_masks]

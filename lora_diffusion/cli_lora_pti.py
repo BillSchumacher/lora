@@ -246,8 +246,7 @@ def loss_step(
 
         target = target * mask
 
-    loss = F.mse_loss(model_pred.float(), target.float(), reduction="mean")
-    return loss
+    return F.mse_loss(model_pred.float(), target.float(), reduction="mean")
 
 
 def train_inversion(
@@ -287,7 +286,7 @@ def train_inversion(
     index_updates = ~index_no_updates
     loss_sum = 0.0
 
-    for epoch in range(math.ceil(num_steps / len(dataloader))):
+    for _ in range(math.ceil(num_steps / len(dataloader))):
         unet.eval()
         text_encoder.train()
         for batch in dataloader:
@@ -381,14 +380,13 @@ def train_inversion(
                             feature_extractor=None,
                         )
 
-                        # open all images in test_image_path
-                        images = []
-                        for file in os.listdir(test_image_path):
-                            if file.endswith(".png") or file.endswith(".jpg") or file.endswith(".jpeg"):
-                                images.append(
-                                    Image.open(os.path.join(test_image_path, file))
-                                )
-
+                        images = [
+                            Image.open(os.path.join(test_image_path, file))
+                            for file in os.listdir(test_image_path)
+                            if file.endswith(".png")
+                            or file.endswith(".jpg")
+                            or file.endswith(".jpeg")
+                        ]
                         wandb.log({"loss": loss_sum / save_steps})
                         loss_sum = 0.0
                         wandb.log(
@@ -445,7 +443,7 @@ def perform_tuning(
 
     loss_sum = 0.0
 
-    for epoch in range(math.ceil(num_steps / len(dataloader))):
+    for _ in range(math.ceil(num_steps / len(dataloader))):
         for batch in dataloader:
             lr_scheduler_lora.step()
 
@@ -518,14 +516,11 @@ def perform_tuning(
                             feature_extractor=None,
                         )
 
-                        # open all images in test_image_path
-                        images = []
-                        for file in os.listdir(test_image_path):
-                            if file.endswith(".png") or file.endswith(".jpg"):
-                                images.append(
-                                    Image.open(os.path.join(test_image_path, file))
-                                )
-
+                        images = [
+                            Image.open(os.path.join(test_image_path, file))
+                            for file in os.listdir(test_image_path)
+                            if file.endswith(".png") or file.endswith(".jpg")
+                        ]
                         wandb.log({"loss": loss_sum / save_steps})
                         loss_sum = 0.0
                         wandb.log(
@@ -632,7 +627,7 @@ def train(
     if output_dir is not None:
         os.makedirs(output_dir, exist_ok=True)
     # print(placeholder_tokens, initializer_tokens)
-    if len(placeholder_tokens) == 0:
+    if not placeholder_tokens:
         placeholder_tokens = []
         print("PTI : Placeholder Tokens not given, using null token")
     else:
